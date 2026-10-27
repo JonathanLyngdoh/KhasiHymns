@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
+import { BookOpen, ChevronRight, Search, X } from "lucide-react";
 import hymns from "../data/hymns.json";
+import ThemeToggle from "../components/ThemeToggle";
 
 interface HomeProps {
   dark: boolean;
@@ -10,65 +11,97 @@ interface HomeProps {
 
 function Home({ dark, setDark }: HomeProps) {
   const [search, setSearch] = useState("");
-
-  const filtered = hymns.filter(
-    (h) =>
-      h.title.toLowerCase().includes(search.toLowerCase()) ||
-      h.number.includes(search),
+  const query = search.trim().toLocaleLowerCase();
+  const filtered = hymns.filter((hymn) =>
+    [hymn.title, hymn.number, hymn.subtitle]
+      .filter(Boolean)
+      .some((value) => value.toLocaleLowerCase().includes(query)),
   );
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-900 pb-3">
-        <div className="flex justify-between items-center mb-3">
-          <h1 className="text-2xl font-bold">Khasi Hymns</h1>
+    <main className="page-shell">
+      <header className="app-header">
+        <div className="brand-lockup">
+          <div className="brand-mark" aria-hidden="true">
+            <BookOpen size={22} strokeWidth={1.8} />
+          </div>
+          <div className="brand-copy">
+            <p className="brand-name">Khasi Hymns</p>
+          </div>
+        </div>
+        <ThemeToggle dark={dark} setDark={setDark} />
+      </header>
 
-          {/* Dark Mode Button */}
+      <div className="search-box">
+        <Search size={20} aria-hidden="true" />
+        <input
+          id="hymn-search"
+          type="search"
+          placeholder="Search hymns"
+          aria-label="Search hymns by number or title"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          autoComplete="off"
+        />
+        {search && (
           <button
-            onClick={() => setDark(!dark)}
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-105 active:scale-95 transition"
+            type="button"
+            className="search-clear"
+            onClick={() => setSearch("")}
+            aria-label="Clear search"
           >
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
+            <X size={18} aria-hidden="true" />
           </button>
+        )}
+      </div>
+
+      <section aria-labelledby="catalog-title">
+        <div className="catalog-heading">
+          <h2 id="catalog-title">{query ? "Search results" : "All hymns"}</h2>
+          <p className="catalog-count" aria-live="polite">
+            {filtered.length.toLocaleString()} {filtered.length === 1 ? "hymn" : "hymns"}
+          </p>
         </div>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search hymn number or title..."
-          className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+        {filtered.length > 0 ? (
+          <ul className="hymn-grid">
+            {filtered.map((hymn) => {
+              const savedKey = localStorage.getItem(`hymn-key-${hymn.id}`);
+              const displayKey = savedKey || hymn.key;
 
-      {/* Hymn List */}
-      <div className="mt-4 space-y-2">
-        {filtered.map((h) => (
-          <Link
-            key={h.id}
-            to={`/hymn/${h.id}`}
-            className="block bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm hover:shadow-md active:scale-95 transition"
-          >
-            <div className="font-semibold">
-              {h.number}. {h.title}
-            </div>
-
-            {(() => {
-              const savedKey = localStorage.getItem(`hymn-key-${h.id}`);
-              const displayKey = savedKey || h.key;
-
-              return displayKey ? (
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {displayKey}
-                </div>
-              ) : null;
-            })()}
-          </Link>
-        ))}
-      </div>
-    </div>
+              return (
+                <li key={hymn.id}>
+                  <Link to={`/hymn/${hymn.id}`} className="hymn-card">
+                    <span className="hymn-number" aria-hidden="true">
+                      {hymn.number}
+                    </span>
+                    <span className="hymn-card-copy">
+                      <span className="hymn-card-title">{hymn.title}</span>
+                      {hymn.subtitle && (
+                        <span className="hymn-card-subtitle">{hymn.subtitle}</span>
+                      )}
+                      {displayKey && (
+                        <span className="hymn-card-key">Key · {displayKey}</span>
+                      )}
+                    </span>
+                    <ChevronRight
+                      className="hymn-card-chevron"
+                      size={19}
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="empty-state" role="status">
+            <h3>No hymns found</h3>
+            <p>Try another title or hymn number.</p>
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
 

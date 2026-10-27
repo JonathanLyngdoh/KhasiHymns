@@ -7,13 +7,18 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg"],
+      includeAssets: [
+        "icon-192.png",
+        "icon-512.png",
+        "background-light.jpg",
+        "background-dark.jpg",
+      ],
       manifest: {
         name: "Khasi Hymns",
         short_name: "Hymns",
         description: "Khasi Church Hymnal",
-        theme_color: "#111827",
-        background_color: "#111827",
+        theme_color: "#f2f6f2",
+        background_color: "#f2f6f2",
         display: "standalone",
         start_url: "/",
         icons: [

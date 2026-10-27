@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Minus, Pencil, Plus } from "lucide-react";
 import hymns from "../data/hymns.json";
-import { Pencil, Sun, Moon, ArrowLeft, Minus, Plus } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
 
 interface HymnDetailProps {
   dark: boolean;
@@ -11,120 +12,146 @@ interface HymnDetailProps {
 function HymnDetail({ dark, setDark }: HymnDetailProps) {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const hymn = hymns.find((h) => h.id === Number(id));
-
+  const hymn = hymns.find((item) => item.id === Number(id));
   const [fontSize, setFontSize] = useState(18);
   const [editing, setEditing] = useState(false);
-
-  const getSavedKey = () => {
-    if (!hymn) return "";
-    return localStorage.getItem(`hymn-key-${hymn.id}`) || "";
-  };
-
-  const [customKey, setCustomKey] = useState(getSavedKey());
+  const [customKey, setCustomKey] = useState(() =>
+    hymn ? localStorage.getItem(`hymn-key-${hymn.id}`) || "" : "",
+  );
 
   if (!hymn) {
-    return <div className="p-4">Hymn not found</div>;
+    return (
+      <main className="page-shell reader-shell">
+        <section className="missing-page">
+          <h1>Hymn not found</h1>
+          <p>It may have been removed or the link may be incomplete.</p>
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft size={18} aria-hidden="true" />
+            Browse hymns
+          </button>
+        </section>
+      </main>
+    );
   }
 
   const displayKey = customKey || hymn.key;
 
-  const saveKey = () => {
-    localStorage.setItem(`hymn-key-${hymn.id}`, customKey);
+  const saveKey = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    localStorage.setItem(`hymn-key-${hymn.id}`, customKey.trim());
+    setCustomKey(customKey.trim());
+    setEditing(false);
+  };
+
+  const cancelKeyEdit = () => {
+    setCustomKey(localStorage.getItem(`hymn-key-${hymn.id}`) || "");
     setEditing(false);
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      {" "}
-      {/* Top Bar */}
-      <div className="flex justify-between items-center mb-4">
-        {/* Back Button */}
+    <main className="page-shell reader-shell">
+      <header className="reader-topbar">
         <button
+          type="button"
+          className="back-button"
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-105 active:scale-95 transition"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={18} aria-hidden="true" />
+          <span>Hymn list</span>
         </button>
+        <ThemeToggle dark={dark} setDark={setDark} />
+      </header>
 
-        {/* Dark Mode */}
-        <button
-          onClick={() => setDark(!dark)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-105 active:scale-95 transition"
-        >
-          {dark ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-      </div>
-      {/* Title */}
-      <h2 className="text-xl font-bold">
-        {hymn.number}. {hymn.title}
-      </h2>
-      {/* Subtitle */}
-      {hymn.subtitle && (
-        <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-          {hymn.subtitle}
-        </div>
-      )}
-      {/* Key Section */}
-      <div className="mb-4">
+      <section className="reader-heading" aria-labelledby="hymn-title">
+        <div className="reader-number">Hymn {hymn.number}</div>
+        <h1 id="hymn-title" className="reader-title">
+          {hymn.title}
+        </h1>
+        {hymn.subtitle && <p className="reader-subtitle">{hymn.subtitle}</p>}
+      </section>
+
+      <section className="reader-tools" aria-label="Hymn settings">
         {!editing ? (
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Key: {displayKey || "Not set"}</span>
-
+          <div className="key-display">
+            <span className="key-label">Song key</span>
+            <span className="key-value">{displayKey || "Not set"}</span>
             <button
+              type="button"
+              className="key-edit-button"
               onClick={() => {
-                setEditing(true);
                 setCustomKey(displayKey || "");
+                setEditing(true);
               }}
-              className="text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
+              aria-label="Edit song key"
+              title="Edit song key"
             >
-              <Pencil size={16} />
+              <Pencil size={16} aria-hidden="true" />
             </button>
           </div>
         ) : (
-          <div className="flex gap-2">
+          <form className="key-editor" onSubmit={saveKey}>
+            <label className="key-label" htmlFor="hymn-key">
+              Song key
+            </label>
             <input
+              id="hymn-key"
+              className="key-input"
               value={customKey}
-              onChange={(e) => setCustomKey(e.target.value)}
-              placeholder="Enter key (e.g. G Major)"
-              className="flex-1 p-2 border rounded-lg dark:bg-gray-800"
+              onChange={(event) => setCustomKey(event.target.value)}
+              placeholder="For example, G major"
+              autoComplete="off"
             />
-            <button
-              onClick={saveKey}
-              className="px-3 py-1 bg-gray-800 text-white rounded-lg hover:scale-105 active:scale-95 transition"
-            >
+            <button type="submit" className="primary-button">
               Save
             </button>
-          </div>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={cancelKeyEdit}
+            >
+              Cancel
+            </button>
+          </form>
         )}
-      </div>
-      {/* Font Controls (Improved) */}
-      <div className="flex justify-start mb-4">
-        <div className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
-          <button
-            onClick={() => setFontSize((prev) => Math.max(prev - 2, 14))}
-            className="p-1.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          >
-            <Minus size={14} />
-          </button>
 
-          <button
-            onClick={() => setFontSize((prev) => prev + 2)}
-            className="p-1.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          >
-            <Plus size={14} />
-          </button>
+        <div className="reading-size">
+          <div className="reading-size-controls">
+            <button
+              type="button"
+              className="size-button"
+              onClick={() => setFontSize((size) => Math.max(size - 2, 14))}
+              disabled={fontSize <= 14}
+              aria-label="Decrease lyric text size"
+            >
+              <Minus size={17} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="size-button"
+              onClick={() => setFontSize((size) => Math.min(size + 2, 32))}
+              disabled={fontSize >= 32}
+              aria-label="Increase lyric text size"
+            >
+              <Plus size={17} aria-hidden="true" />
+            </button>
+          </div>
         </div>
-      </div>
-      {/* Lyrics */}
-      <div
-        style={{ fontSize: `${fontSize}px` }}
-        className="whitespace-pre-line leading-loose"
+      </section>
+
+      <article
+        className="lyrics-sheet"
+        aria-label={`Lyrics for ${hymn.title}`}
       >
-        {hymn.lyrics}
-      </div>
-    </div>
+        <p className="lyrics-text" lang="kha" style={{ fontSize: `${fontSize}px` }}>
+          {hymn.lyrics}
+        </p>
+      </article>
+
+    </main>
   );
 }
 
