@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search, X } from "lucide-react";
 import hymns from "../data/hymns.json";
@@ -12,10 +12,24 @@ interface HomeProps {
 function Home({ dark, setDark }: HomeProps) {
   const [search, setSearch] = useState("");
   const query = search.trim().toLocaleLowerCase();
-  const filtered = hymns.filter((hymn) =>
-    [hymn.title, hymn.number, hymn.subtitle]
-      .filter(Boolean)
-      .some((value) => value.toLocaleLowerCase().includes(query)),
+  const savedKeys = useMemo(
+    () =>
+      new Map(
+        hymns.map(
+          (hymn) =>
+            [hymn.id, localStorage.getItem(`hymn-key-${hymn.id}`)] as const,
+        ),
+      ),
+    [],
+  );
+  const filtered = useMemo(
+    () =>
+      hymns.filter((hymn) =>
+        [hymn.title, hymn.number, hymn.subtitle]
+          .filter(Boolean)
+          .some((value) => value.toLocaleLowerCase().includes(query)),
+      ),
+    [query],
   );
 
   return (
@@ -66,7 +80,7 @@ function Home({ dark, setDark }: HomeProps) {
         {filtered.length > 0 ? (
           <ul className="hymn-grid">
             {filtered.map((hymn) => {
-              const savedKey = localStorage.getItem(`hymn-key-${hymn.id}`);
+              const savedKey = savedKeys.get(hymn.id);
               const displayKey = savedKey || hymn.key;
 
               return (
