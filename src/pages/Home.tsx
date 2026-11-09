@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, ChevronRight, Search, X } from "lucide-react";
+import { ChevronRight, Search, X } from "lucide-react";
 import hymns from "../data/hymns.json";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -22,11 +22,11 @@ function Home({ dark, setDark }: HomeProps) {
     <main className="page-shell">
       <header className="app-header">
         <div className="brand-lockup">
-          <div className="brand-mark" aria-hidden="true">
-            <BookOpen size={22} strokeWidth={1.8} />
-          </div>
           <div className="brand-copy">
-            <p className="brand-name">Khasi Hymns</p>
+            <p className="brand-name">
+              <span className="brand-initial">K</span>hasi{" "}
+              <span className="brand-initial">H</span>ymns
+            </p>
           </div>
         </div>
         <ThemeToggle dark={dark} setDark={setDark} />

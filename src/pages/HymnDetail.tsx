@@ -39,6 +39,7 @@ function HymnDetail({ dark, setDark }: HymnDetailProps) {
   }
 
   const displayKey = customKey || hymn.key;
+  const stanzas = hymn.lyrics.split(/\r?\n\s*\r?\n/).filter(Boolean);
 
   const saveKey = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -142,13 +143,17 @@ function HymnDetail({ dark, setDark }: HymnDetailProps) {
         </div>
       </section>
 
-      <article
-        className="lyrics-sheet"
-        aria-label={`Lyrics for ${hymn.title}`}
-      >
-        <p className="lyrics-text" lang="kha" style={{ fontSize: `${fontSize}px` }}>
-          {hymn.lyrics}
-        </p>
+      <article className="lyrics-sheet" aria-label={`Lyrics for ${hymn.title}`}>
+        {stanzas.map((stanza, index) => (
+          <p
+            className="lyrics-text"
+            key={`${hymn.id}-stanza-${index}`}
+            lang="kha"
+            style={{ fontSize: `${fontSize}px` }}
+          >
+            {stanza}
+          </p>
+        ))}
       </article>
 
     </main>

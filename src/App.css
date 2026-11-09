@@ -25,26 +25,32 @@
   --gold: #8b6428;
   --focus: #347a60;
   --shadow: 0 14px 34px rgb(26 57 43 / 7%);
+  --glass-surface: rgb(255 255 255 / 44%);
+  --glass-shadow: 0 16px 42px rgb(37 47 59 / 14%), 0 0 26px rgb(255 255 255 / 12%);
   --page-image: url("/background-light.jpg");
-  --image-wash: rgb(242 246 242 / 80%);
+  --page-image-position: center;
+  --page-image-overlay: rgb(255 255 255 / 24%);
 }
 
 .dark {
-  --page: #101a16;
-  --surface: #18241e;
-  --surface-raised: #202e27;
-  --ink: #edf4ef;
-  --muted: #adbbb2;
-  --line: #33453a;
-  --accent: #9ac9aa;
-  --accent-strong: #b8ddc4;
-  --accent-soft: #263e31;
-  --accent-ink: #e0f0e5;
-  --gold: #dfbc78;
-  --focus: #abd9b9;
-  --shadow: 0 16px 36px rgb(0 0 0 / 22%);
+  --page: #11100f;
+  --surface: #1b1917;
+  --surface-raised: #26221e;
+  --ink: #f4efe7;
+  --muted: #b8aea1;
+  --line: #40382f;
+  --accent: #d8b779;
+  --accent-strong: #eed39c;
+  --accent-soft: #3a3022;
+  --accent-ink: #241a0b;
+  --gold: #e5bd75;
+  --focus: #e3c27d;
+  --shadow: 0 16px 36px rgb(0 0 0 / 32%);
+  --glass-surface: rgb(21 20 24 / 50%);
+  --glass-shadow: 0 16px 42px rgb(0 0 0 / 32%), 0 0 28px rgb(216 183 121 / 5%);
   --page-image: url("/background-dark.jpg");
-  --image-wash: rgb(8 12 14 / 48%);
+  --page-image-position: center;
+  --page-image-overlay: rgb(8 10 16 / 58%);
   color-scheme: dark;
 }
 
@@ -106,13 +112,24 @@ input:focus-visible {
   position: fixed;
   z-index: -1;
   inset: 0;
-  background-image: linear-gradient(var(--image-wash), var(--image-wash)),
+  background-image: linear-gradient(var(--page-image-overlay), var(--page-image-overlay)),
     var(--page-image);
-  background-position: center;
+  background-position: var(--page-image-position);
   background-repeat: no-repeat;
   background-size: cover;
   content: "";
   pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  :root {
+    /* Keep the floral detail visible on narrow screens. */
+    --page-image-position: right center;
+  }
+
+  .dark {
+    --page-image-position: right center;
+  }
 }
 
 .app-shell.with-install-banner .page-shell {
@@ -151,31 +168,26 @@ input:focus-visible {
   min-width: 0;
 }
 
-.brand-mark {
-  display: grid;
-  width: 2.8rem;
-  height: 2.8rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 0.9rem;
-  color: #fff;
-  background: #28624d;
-}
-
-.dark .brand-mark {
-  color: #13251b;
-  background: #9ac9aa;
-}
-
 .brand-copy {
   min-width: 0;
 }
 
 .brand-name {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: "Palatino Linotype", "Book Antiqua", "URW Chancery L", Georgia, serif;
+  font-size: clamp(1.45rem, 5vw, 1.85rem);
+  font-style: italic;
+  font-weight: 400;
+  font-variant-ligatures: common-ligatures;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.brand-initial {
+  display: inline-block;
+  font-size: 1.22em;
+  font-weight: 500;
+  letter-spacing: -0.055em;
 }
 
 .icon-button {
@@ -306,15 +318,20 @@ input:focus-visible {
 }
 
 .hymn-card {
+  position: relative;
+  overflow: visible;
   display: grid;
   min-height: 5.35rem;
   grid-template-columns: 2.9rem minmax(0, 1fr) 1.25rem;
   align-items: center;
   gap: 0.85rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 1rem;
-  background: var(--surface);
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
   color: inherit;
   text-decoration: none;
   transition: border-color 150ms ease, background-color 150ms ease,
@@ -322,8 +339,7 @@ input:focus-visible {
 }
 
 .hymn-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: var(--surface-raised);
+  background: color-mix(in srgb, var(--glass-surface) 84%, var(--surface-raised));
 }
 
 .hymn-card:active {
@@ -583,16 +599,22 @@ input:focus-visible {
 }
 
 .lyrics-sheet {
+  display: grid;
+  gap: 0.85rem;
   margin-top: 0.5rem;
-  padding: clamp(1.25rem, 5vw, 2.5rem);
-  border: 1px solid var(--line);
-  border-radius: 1.25rem;
-  background: var(--surface);
-  box-shadow: var(--shadow);
 }
 
 .lyrics-text {
+  position: relative;
+  overflow: visible;
   margin: 0;
+  padding: clamp(1rem, 4vw, 1.5rem);
+  border: 0;
+  border-radius: 1.15rem;
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
   color: var(--ink);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.125rem;

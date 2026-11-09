@@ -35,7 +35,7 @@ function App() {
     localStorage.setItem("theme", dark ? "dark" : "light");
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", dark ? "#101a16" : "#f2f6f2");
+      ?.setAttribute("content", dark ? "#11100f" : "#f2f6f2");
   }, [dark]);
 
   const dismissInstall = () => {
